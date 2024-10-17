@@ -1,0 +1,22 @@
+# Ignore the virtual environment
+venv/
+
+# Ignore node modules if present
+node_modules/
+
+# Ignore any log files
+*.log
+
+# Ignore Git metadata
+.git
+
+# Ignore temporary files
+*.tmp
+*.swp
+
+# Ignore build artifacts or data not needed in the container
+__pycache__/
+*.pyc
+dist/
+build/
+;

@@ -32,32 +32,29 @@ def download_song(song_url_or_name, download_folder, keep_song=False):
                     song_url_or_name = search_results['entries'][0]['webpage_url']
                 else:
                     print("No results found for the search query.")
-                    return
+                    return None
             
-            info = ydl.extract_info(song_url_or_name, download=False)
+            info = ydl.extract_info(song_url_or_name, download=True)
             if 'entries' in info:
-                entries = info['entries'][:12]
+                entry = info['entries'][0]
             else:
-                entries = [info]
+                entry = info
             
-            for entry in entries:
-                title = entry.get('title', 'Unknown Title')
-                filepath = os.path.join(download_folder, f"{title}.webm")
-                
-                ydl.download([entry['webpage_url']])
-                print(f"Download succeeded for: {title}")
-                
-                play_counts[title] += 1
-                
-                if play_counts[title] > 3 or keep_song:
-                    print(f"Keeping song: {title}")
-                else:
-                    delete_song(filepath)
+            # After successful download, get the title and extension for the file
+            title = entry.get('title', 'Unknown Title')
+            file_ext = entry.get('ext', 'webm')
+            filename = f"{title}.{file_ext}"
+            filepath = os.path.join(download_folder, filename)
+
+            print(f"Download succeeded for: {title}")
+            return filename
         
         except yt_dlp.utils.DownloadError as e:
             print(f"DownloadError: {e}")
+            return None
         except Exception as e:
             print(f"An error occurred: {e}")
+            return None
 
 if __name__ == "__main__":
     SAVE_PATH = os.path.join(os.getcwd(), "downloaded-songs")

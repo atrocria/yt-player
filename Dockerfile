@@ -1,17 +1,23 @@
-# Official Python runtime as the base image
+# Official Python runtime as the base image from the Dockerhub
 FROM python:3.9.6
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
 # Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install necessary packages
 RUN pip install -r requirements.txt
 
-# Copy the rest of your bot's code into the container
-COPY . .
+# Copy all project files into the container
+COPY . /app
 
-# Run the bot
-CMD ["python", "download.py"]
+# Expose port 5000 for Flask
+EXPOSE 5000
+
+# Environment for development mode to automatically detect changes
+ENV FLASK_ENV=development
+
+# Command to run the server
+CMD ["python", "server.py"]
