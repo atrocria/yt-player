@@ -1,11 +1,5 @@
 # https://github.com/yt-dlp
 
-# video player local, W.I.P
-
-# To run this project, follow these steps for first time setup:
-# 1. docker build -t downloader .
-# 3. python download.py
-
 # todo: 
 # direct play support
 # stream support
@@ -23,6 +17,10 @@ import yt_dlp
 import time
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from loadenv import loadenv
+
+loadenv()
+save_dir = os.getenv("SAVE_DIR")
 
 SAVE_PATH = os.path.join(os.getcwd(), "downloaded-yt-videos") # save to current file directory + filename
 

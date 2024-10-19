@@ -19,6 +19,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
+
+    /* Module Resolution */
+    // "baseUrl": "./", 
+    // "paths": {
+    //   "*": ["node_modules/*", "src/*"]
   },
   "include": ["src"]
 }

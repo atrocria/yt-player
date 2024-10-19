@@ -1,22 +1,19 @@
 import os
 import yt_dlp
-from collections import defaultdict
-
-play_counts = defaultdict(int)
 
 def delete_song(filepath):
-    try:
-        if os.path.exists(filepath):
+    if os.path.exists(filepath):
+        try:
             os.remove(filepath)
             print(f"Deleted song: {filepath}")
-        else:
-            print(f"Song file not found: {filepath}")
-    except Exception as e:
-        print(f"Error deleting song: {e}")
+        except Exception as e:
+            print(f"Error deleting song: {e}")
+    else:
+        print(f"Song file not found: {filepath}")
 
 def download_song(song_url_or_name, download_folder, keep_song=False):
     print(f"Starting download for: {song_url_or_name}")
-    
+
     ydl_opts = {
         'format': 'bestaudio[ext=webm]',
         'noplaylist': False,
@@ -33,22 +30,19 @@ def download_song(song_url_or_name, download_folder, keep_song=False):
                 else:
                     print("No results found for the search query.")
                     return None
-            
+
             info = ydl.extract_info(song_url_or_name, download=True)
-            if 'entries' in info:
-                entry = info['entries'][0]
-            else:
-                entry = info
-            
-            # After successful download, get the title and extension for the file
+            entry = info['entries'][0] if 'entries' in info else info
+
             title = entry.get('title', 'Unknown Title')
             file_ext = entry.get('ext', 'webm')
             filename = f"{title}.{file_ext}"
-            filepath = os.path.join(download_folder, filename)
 
             print(f"Download succeeded for: {title}")
+            with open(os.path.join(download_folder, "index"), "a+") as f:
+                f.write(f"{filename}\n")
             return filename
-        
+
         except yt_dlp.utils.DownloadError as e:
             print(f"DownloadError: {e}")
             return None

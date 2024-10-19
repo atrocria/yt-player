@@ -1,8 +1,16 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template
 import os
 from download_songs import download_song
+from flask import Flask, request, jsonify, send_from_directory, render_template
+from flask_cors import CORS
 
-app = Flask(__name__)
+source_dir = os.path.abspath('../frontend/dist/')  # Adjust this to your React build directory
+app = Flask(
+        __name__,
+        template_folder=source_dir,
+        static_url_path='', 
+        static_folder=source_dir
+    )
+CORS(app)
 
 # Set download path
 download_path = os.path.join(os.getcwd(), "downloaded-yt-videos")
@@ -13,20 +21,20 @@ keep_song = False # future feature, keep song permanently
 if not os.path.exists(download_path):
     os.makedirs(download_path)
 
-# only work on example.com/
+# Serve the main React application
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# only work on example.com/download
+# Download endpoint that handles the YouTube URL
 @app.route('/download', methods=['POST'])
 def download():
     global latest_audio_file
     data = request.get_json()
-    url = data.get('url')
-
-    if not url:
+    if not data or 'url' not in data:
         return jsonify({'error': 'No URL provided'}), 400
+
+    url = data['url']
 
     try:
         latest_audio_file = download_song(url, download_path, keep_song)
@@ -45,7 +53,8 @@ def get_latest_audio():
     else:
         return jsonify({'error': 'No audio file available'}), 404
 
-@app.route('/audio/<filename>')
+# Serve audio files
+@app.route('/audio/<path:filename>')
 def serve_audio(filename):
     file_path = os.path.join(download_path, filename)
     if not os.path.exists(file_path):
