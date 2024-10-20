@@ -8,6 +8,17 @@ import "./App.css";
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState("chat");
 
+  const renderPanelStatus = () => {
+    if (activeTab === "music") {
+      return (
+        <div className="music-panel-status text-xs text-white absolute top-1 right-0">
+          Music Panel (Playing)
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <Router>
       <div className="app flex flex-col bg-[#1b1b1b] h-screen overflow-hidden">
@@ -30,6 +41,9 @@ const App: React.FC = () => {
           </nav>
         </header>
 
+        {/* Music Panel Indicator */}
+        {renderPanelStatus()}
+
         {/* App Content Section */}
         <main className="app-content flex-grow flex relative overflow-hidden">
           {/* Main Content and Music Panel Container */}
@@ -50,6 +64,26 @@ const App: React.FC = () => {
                   <Route path="/friends" element={<FriendsList />} />
                 </Routes>
               </div>
+
+              {/* Chat Field */}
+              <div
+                className="chat-field-container px-4 py-2 flex items-center justify-between w-full"
+                style={{
+                  position: "relative",
+                  bottom: "1rem",
+                }}
+              >
+                <div className="input-container flex items-center w-full bg-[#2a2a2a] p-4 rounded-full">
+                  <input
+                    type="text"
+                    placeholder="Type a message..."
+                    className="flex-grow bg-transparent text-white focus:outline-none placeholder-gray-400"
+                  />
+                  <button className="chat-box-circle w-10 h-10 bg-[#BB86FC] rounded-full ml-4 flex items-center justify-center">
+                    <span className="text-white">Send</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Music Panel */}
@@ -62,7 +96,7 @@ const App: React.FC = () => {
                   margin: "1rem",
                 }}
               >
-              <MusicPanel activeTab={activeTab} />
+                <MusicPanel isPlaying={activeTab === "music"} />
               </aside>
             )}
           </div>
