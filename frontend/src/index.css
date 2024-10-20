@@ -2,8 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
+/* Add this to index.css to override the browser's default styles */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    /* Change this as per your needs */
 }
