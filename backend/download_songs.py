@@ -1,5 +1,10 @@
 import os
 import yt_dlp
+# from pymongo import MongoClient
+# import database
+
+# db = database.get_db()
+# songs_collection = db['songs']
 
 def delete_song(filepath):
     if os.path.exists(filepath):
@@ -39,6 +44,15 @@ def download_song(song_url_or_name, download_folder, keep_song=False):
             filename = f"{title}.{file_ext}"
 
             print(f"Download succeeded for: {title}")
+
+            # Update song metadata in the MongoDB database or change count if it already exists
+            # # Insert song metadata into the MongoDB database
+            # song = {
+            #     'title': title,
+            #     'playCount': 0
+            # }
+            # songs_collection.insert_one(song)
+            # print(f'Song "{title}" added to the database.')
             with open(os.path.join(download_folder, "index"), "a+") as f:
                 f.write(f"{filename}\n")
             return filename
