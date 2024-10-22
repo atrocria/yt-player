@@ -1,61 +1,88 @@
-from flask import Flask, jsonify, request
-from bson import ObjectId
-from pymongo import MongoClient
+from flask import Flask, jsonify, request, send_file
 import os
 from flask_cors import CORS
+from download_songs import download_song as yt_download_song
+import sys
+from mutagen.easyid3 import EasyID3
+from mutagen.mp3 import MP3
 
 app = Flask(__name__)
 CORS(app)
 
-# Database configuration
-from dotenv import load_dotenv
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 
-load_dotenv()
-
-host = 'mongoplayer.bsez7.mongodb.net'
-dbname = 'YTPlayer'
-username = os.getenv('MONGO_USERNAME')
-password = os.getenv('MONGO_PASSWORD')
-
-if not username or not password:
-    raise ValueError("MONGO_USERNAME and MONGO_PASSWORD must be set in environment variables")
-
-MONGO_URI = f"mongodb+srv://{username}:{password}@{host}/{dbname}?retryWrites=true&w=majority&appName=mongoPlayer"
-client = MongoClient(MONGO_URI)
-db = client[dbname]
-
-# Endpoint to fetch all songs
 @app.route('/api/songs', methods=['GET'])
 def get_songs():
-    songs_collection = db['songs']
-    songs = list(songs_collection.find({}))
-    for song in songs:
-        song['_id'] = str(song['_id'])  # Convert ObjectId to string for JSON serialization
-    return jsonify(songs), 200
-
-# Endpoint to increment the play count of a specific song
-@app.route('/api/songs/<song_id>/play', methods=['PUT'])
-def play_song(song_id):
     try:
-        song_id_obj = ObjectId(song_id)
-    except Exception:
-        return jsonify({"error": "Invalid song ID format"}), 400
+        download_folder = os.path.join(os.getcwd(), "downloaded_yt_videos")
+        if not os.path.exists(download_folder):
+            return jsonify([]), 200
 
-    songs_collection = db['songs']
-    song = songs_collection.find_one({"_id": song_id_obj})
+        songs = []
+        for filename in os.listdir(download_folder):
+            if filename.endswith(('.webm', '.mp3', '.m4a')):
+                song_path = os.path.join(download_folder, filename)
+                title = filename
+                artist = "Unknown Artist"
+                duration = 0
 
-    if song:
-        updated_count = song.get('playCount', 0) + 1
-        result = songs_collection.update_one(
-            {"_id": song_id_obj},
-            {"$set": {"playCount": updated_count}}
-        )
-        if result.modified_count == 1:
-            return jsonify({"message": "Play count updated successfully"}), 200
-        else:
-            return jsonify({"error": "Failed to update play count"}), 500
-    else:
-        return jsonify({"error": "Song not found"}), 404
+                # Attempt to extract metadata if it's an mp3 file
+                if filename.endswith('.mp3'):
+                    try:
+                        audio = MP3(song_path, ID3=EasyID3)
+                        title = audio.get('title', [filename])[0]
+                        artist = audio.get('artist', ['Unknown Artist'])[0]
+                        duration = int(audio.info.length)
+                    except Exception:
+                        pass
+
+                songs.append({
+                    "title": title,
+                    "artist": artist,
+                    "duration": duration,
+                    "filename": filename
+                })
+        
+        return jsonify(songs), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/songs/<song_title>/play', methods=['GET'])
+def play_song(song_title):
+    try:
+        download_folder = os.path.join(os.getcwd(), "downloaded_yt_videos")
+        song_path = os.path.join(download_folder, song_title)
+
+        if not os.path.exists(song_path):
+            return jsonify({"error": "Song not found"}), 404
+        
+        return send_file(song_path, as_attachment=False)
+    except Exception as e:
+        return jsonify({"error": f"Failed to play song: {str(e)}"}), 500
+
+@app.route('/api/download_song', methods=['POST'])
+def download_song():
+    try:
+        data = request.json
+        if not data or 'query' not in data:
+            return jsonify({"error": "Song query is missing"}), 400
+        
+        song_query = data['query']
+        download_folder = os.path.join(os.getcwd(), "downloaded_yt_videos")
+        if not os.path.exists(download_folder):
+            os.makedirs(download_folder)
+        
+        title = yt_download_song(song_query, download_folder)
+        if not title:
+            return jsonify({"error": "Failed to download the song."}), 500
+        
+        return jsonify({"message": "Song downloaded successfully", "title": title}), 200
+    
+    except UnicodeEncodeError:
+        return jsonify({"error": "Failed to encode song metadata due to unsupported characters."}), 500
+    except Exception as e:
+        return jsonify({"error": f"Failed to process song request: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

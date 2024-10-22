@@ -17,3 +17,30 @@ body {
     font-family: sans-serif;
     /* Change this as per your needs */
 }
+
+/* Custom Scrollbar Styling */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    /* The width of the scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    /* Track color (dark gray to match your design) */
+    border-radius: 4px;
+    /* Makes the track rounded */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Thumb color (lighter gray for contrast) */
+    border-radius: 4px;
+    /* Makes the thumb rounded */
+    border: 2px solid #2d2d2d;
+    /* Adds spacing for a more modern look */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker thumb color on hover for feedback */
+}

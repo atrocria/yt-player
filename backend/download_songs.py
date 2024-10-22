@@ -1,10 +1,14 @@
 import os
 import yt_dlp
+import sys
 # from pymongo import MongoClient
 # import database
 
 # db = database.get_db()
 # songs_collection = db['songs']
+
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 
 def delete_song(filepath):
     if os.path.exists(filepath):

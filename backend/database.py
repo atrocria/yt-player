@@ -1,10 +1,11 @@
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from bson import ObjectId
 import os
 
 load_dotenv()
 
-host = 'mongoplayer.bsez7.mongodb.net' 
+host = 'mongoplayer.bsez7.mongodb.net'
 dbname = 'YTPlayer'
 username = os.getenv('MONGO_USERNAME')
 password = os.getenv('MONGO_PASSWORD')
@@ -19,9 +20,27 @@ def get_database():
     except Exception as e:
         raise ConnectionError(f"Failed to connect to the database: {str(e)}")
 
-if __name__ == '__main__':
-    try:
-        db = get_database()
-        print("Database connection successful:", db)
-    except ConnectionError as e:
-        print(e)
+# Function to fetch all songs
+def fetch_all_songs():
+    db = get_database()
+    songs_collection = db['songs']
+    songs = list(songs_collection.find({}))
+    for song in songs:
+        song['_id'] = str(song['_id'])  # Convert ObjectId to string for JSON serialization
+    return songs
+
+# Function to increment play count of a song
+def increment_play_count(song_id):
+    db = get_database()
+    songs_collection = db['songs']
+    song = songs_collection.find_one({"_id": ObjectId(song_id)})
+
+    if song:
+        updated_count = song.get('playCount', 0) + 1
+        result = songs_collection.update_one(
+            {"_id": ObjectId(song_id)},
+            {"$set": {"playCount": updated_count}}
+        )
+        return result.modified_count == 1
+    else:
+        return None
