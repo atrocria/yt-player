@@ -10,15 +10,15 @@ import sys
 sys.stdout.reconfigure(encoding='utf-8')
 sys.stderr.reconfigure(encoding='utf-8')
 
-def delete_song(filepath):
-    if os.path.exists(filepath):
-        try:
-            os.remove(filepath)
-            print(f"Deleted song: {filepath}")
-        except Exception as e:
-            print(f"Error deleting song: {e}")
-    else:
-        print(f"Song file not found: {filepath}")
+# def delete_song(filepath):
+#     if os.path.exists(filepath):
+#         try:
+#             os.remove(filepath)
+#             print(f"Deleted song: {filepath}")
+#         except Exception as e:
+#             print(f"Error deleting song: {e}")
+#     else:
+#         print(f"Song file not found: {filepath}")
 
 def download_song(song_url_or_name, download_folder, keep_song=False):
     print(f"Starting download for: {song_url_or_name}")
@@ -57,7 +57,7 @@ def download_song(song_url_or_name, download_folder, keep_song=False):
             # }
             # songs_collection.insert_one(song)
             # print(f'Song "{title}" added to the database.')
-            with open(os.path.join(download_folder, "index"), "a+") as f:
+            with open(os.path.join(download_folder, "index"), "a+", encoding='utf-8') as f:
                 f.write(f"{filename}\n")
             return filename
 
@@ -69,13 +69,14 @@ def download_song(song_url_or_name, download_folder, keep_song=False):
             return None
 
 if __name__ == "__main__":
-    SAVE_PATH = os.path.join(os.getcwd(), "downloaded-songs")
-    if not os.path.exists(SAVE_PATH):
-        os.makedirs(SAVE_PATH)
+    if len(sys.argv) < 3:
+        print("Usage: python download_songs.py <song_name_or_url> <download_folder>")
+        sys.exit(1)
 
-    while True:
-        song_name_or_url = input("Enter the song name or URL (or type 'exit' to quit): ")
-        if song_name_or_url.lower() == 'exit':
-            break
-        keep = input("Do you want to keep this song permanently? (y/n): ").strip().lower() == 'y'
-        download_song(song_name_or_url, SAVE_PATH, keep_song=keep)
+    song_name_or_url = sys.argv[1]
+    download_folder = sys.argv[2]
+
+    if not os.path.exists(download_folder):
+        os.makedirs(download_folder)
+
+    download_song(song_name_or_url, download_folder, keep_song=True)

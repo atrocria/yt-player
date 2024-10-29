@@ -16,6 +16,7 @@
     "cookie": "^0.7.0",
     "core-js": "^3.38.1",
     "date-fns": "^3.0.0",
+    "framer-motion": "^11.11.10",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "postcss": "^8.4.47",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@eslint/js": "^9.11.1",
     "@types/axios": "^0.14.0",
+    "@types/node": "^22.7.9",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@types/react-icons": "^3.0.0",
