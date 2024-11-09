@@ -190,8 +190,8 @@ const MusicPanel: React.FC<MusicPanelProps> = ({
   }, [isLooping, audioRef]);
 
   return (
-    <>
-      <div className="music-panel w-[60%] flex-col overflow-x-hidden h-[calc(100vh-5.5rem)] custom-scrollbar">
+    <div className="flex w-full h-[25vh]">
+      <div className="music-panel w-[60%] flex flex-col overflow-x-hidden custom-scrollbar">
         {/* Search Bar */}
         <div className="search-bar mb-6 w-full relative rounded-full">
           <input
@@ -235,17 +235,45 @@ const MusicPanel: React.FC<MusicPanelProps> = ({
             Your browser does not support the audio element.
           </audio>
           {currentSong && (
-            <h3 className="text-xl font-semibold mt-3 mb-3 text-white">
-              Now Playing: {currentSong.title}
-            </h3>
+            <div className="flex h-[30vh]">
+              <h3 className="text-xl font-semibold mt-3 mb-3 text-white">
+                Now Playing: {currentSong.title}
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+                <br></br>
+                dsfligunhbsdioug
+              </h3>
+            </div>
           )}
         </div>
       </div>
 
       {/* Song List */}
-      <div className="song-list w-[40%] ml-2 h-[80%]">
+      <div className="song-list w-[40%] ml-2">
         <h3 className="text-xl font-semibold mb-3 text-white">Saved Songs</h3>
-        <ul className="list-none h-[50%] overflow-y-auto overflow-x-hidden custom-scrollbar ml-1 mr-1">
+        <ul className="list-none h-[25vh] overflow-y-auto overflow-x-hidden custom-scrollbar ml-1 mr-1">
           {filteredSongs.map((song, index) => (
             <li
               key={index}
@@ -276,7 +304,10 @@ const MusicPanel: React.FC<MusicPanelProps> = ({
           ))}
         </ul>
       </div>
-    </>
+      <div className="play-list">
+        
+      </div>
+    </div>
   );
 };
 

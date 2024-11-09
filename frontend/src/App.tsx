@@ -1,11 +1,12 @@
+import { useAuthState } from "react-firebase-hooks/auth";  // Optional library for hooks
+import { auth } from "./firebaseConfig"; // Adjust the path based on your component location
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import {
-  useLocation,
-  useNavigate
-} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FaSync } from "react-icons/fa";
 import ChatWindow from "./components/ChatWindow";
 import MusicPanel from "./components/MusicPanel";
+import SignIn from "./components/SignIn";
 // import FriendsList from "./components/FriendsList";
 import VC from "./components/VC";
 import "./App.css";
@@ -19,26 +20,26 @@ interface Song {
 }
 
 const App: React.FC = () => {
+  const [user, loading, error] = useAuthState(auth); // Get the current authenticated user
+
   const [isChatWindowActive, setActive_ChatWindow] = useState<boolean>(true); // is chat window active? Default to true
   const [isMusicPanelActive, setActive_MusicPanel] = useState<boolean>(false); // is music panel active? Default to false
   const [isVCActive, setActive_VC] = useState<boolean>(false); // is vc active? Default to false
   const [isPlaying, setIsPlaying] = useState<boolean>(false); // is music playing? default to false
   const [currentSong, setCurrentSong] = useState<Song | null>(null); // what is the current song of type: interface(song)? default to null
   const [isLooping, setIsLooping] = useState<boolean>(false); // is repeat active? default to false
+  const [isSignInPopupVisible, setIsSignInPopupVisible] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null); // reference to audio element, default to null
   const location = useLocation(); // read url
   const navigate = useNavigate(); // write and navigate to url
 
+  // Function to parse URL parameters
   // Function to parse URL parameters
   const parseUrlParams = useCallback(() => {
     const params = new URLSearchParams(location.search);
     const chatParam = params.get("Chat");
     const musicPanelParam = params.get("MusicPanel");
     const repeatParam = params.get("repeat") || params.get("loop");
-
-    if (!location.pathname.includes("/channels/@me")) {
-      navigate("/channels/@me", { replace: true });
-    }
 
     if (chatParam === "true") {
       setActive_ChatWindow(true);
@@ -54,12 +55,53 @@ const App: React.FC = () => {
         audioRef.current.loop = true;
       }
     }
-  }, [location, setActive_MusicPanel, audioRef, navigate, setIsLooping]);
+  }, [
+    location,
+    setActive_ChatWindow,
+    setActive_MusicPanel,
+    setIsLooping,
+    audioRef,
+  ]);
 
+  
+  // Effect to handle URL parameters
   useEffect(() => {
-    parseUrlParams();
-  }, [parseUrlParams]);
+    if(user){
+      parseUrlParams();
+    }
+  }, [parseUrlParams, user]);
 
+  // Effect to handle user navigation
+  useEffect(() => {
+    if (user && !location.pathname.includes("/channels/@me")) {
+      navigate("/channels/@me", { replace: true });
+    }
+  }, [user, location, navigate]);
+
+  //auth
+  if (!user) {
+    return (
+      <>
+        <div className="flex items-center justify-center h-screen">
+          <button
+            className="p-4 bg-blue-500 text-white rounded-lg"
+            onClick={() => setIsSignInPopupVisible(true)}
+          >
+            Sign In
+          </button>
+        </div>
+        {isSignInPopupVisible && (
+          <SignIn onClose={() => setIsSignInPopupVisible(false)} />
+        )}
+      </>
+    );
+  }
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+  if (error) {
+    return <p>Error: {error.message}.</p>;
+  }
 
   // Function to display music panel status
   const renderPanelStatus = () => {
@@ -163,7 +205,7 @@ const App: React.FC = () => {
           {/* Wrapper for Chat and Music Panels */}
           <div
             className={
-              "flex flex-row mt-2  mr-2 transition-all duration-300 flex-grow h-full"
+              "flex flex-row mt-1 mr-2 transition-all duration-300 flex-grow h-full"
             }
           >
             {/* Chat Window Wrapper */}
@@ -171,15 +213,18 @@ const App: React.FC = () => {
               <div className="chat-wrapper-container flex flex-col flex-1 h-full overflow-hidden">
                 {/* Chat Window Container */}
                 <div className="chat-window-container flex-1 overflow-y-auto custom-scrollbar mb-2">
-                  <ChatWindow />
+                  <ChatWindow
+                    user={user}
+                  />
                 </div>
               </div>
             )}
 
             {/* Music Panel */}
-            {isMusicPanelActive && (
-              <aside className="music-panel-container h-[90vh] flex flex-1 p-4 bg-[#242424] rounded-2xl shadow-lg">
-                <div className="w-full flex">
+            {isMusicPanelActive ? (
+              <aside className="music-panel-container w-full h-[90vh] ml-2 flex flex-col flex-[2] p-4 bg-[#242424] rounded-2xl shadow-lg">
+                {/* Flexible container with stacked components */}
+                <div className="w-full mb-4">
                   <MusicPanel
                     isPlaying={isPlaying}
                     setIsPlaying={setIsPlaying}
@@ -189,18 +234,26 @@ const App: React.FC = () => {
                     isLooping={isLooping}
                     setIsLooping={setIsLooping}
                     onRepeatToggle={handleRepeatToggle}
-                  />{" "}
+                  />
                 </div>
+                {isVCActive && (
+                  <div className="mt-1 mb-1 w-full">
+                    <hr className="w-[95%] mx-auto mt-7 content-center border-t border-gray-600" />
+                    <div className="w-full">
+                      <VC />
+                    </div>
+                  </div>
+                )}
               </aside>
-            )}
-
-            {/* VC */}
-            {isVCActive && (
-              <aside className="vc-container flex items-center justify-center h-[90vh] flex-1 p-4 bg-[#202020] rounded-2xl shadow-lg">
-                <div className="w-full flex">
-                  <VC />
-                </div>
-              </aside>
+            ) : (
+              // If Music Panel is not active, VC takes up the full space
+              isVCActive && (
+                <aside className="music-panel-container w-full h-[90vh] ml-2 flex flex-1 p-4 bg-[#242424] rounded-2xl shadow-lg">
+                  <div className="w-full">
+                    <VC />
+                  </div>
+                </aside>
+              )
             )}
           </div>
         </div>

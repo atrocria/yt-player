@@ -10,7 +10,24 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(cors());
+// allow websites from?
+// const allowedOrigins = ["https://1h13wmxr-5173.asse.devtunnels.ms"];
+const allowedOrigins = ["http://localhost:5173"];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+        // Remove any trailing slashes from the origin before checking
+        callback(null, true);
+      } else {
+        // Deny access for any origin not in the allowed list
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  })
+);
+
 app.use(express.json());
 
 const downloadFolder = path.join(__dirname, "downloaded_yt_videos");
@@ -37,7 +54,7 @@ app.get("/api/songs", (req, res) => {
       )
       .map((filename) => {
         return {
-          title: filename,
+          title: path.basename(filename, path.extname(filename)),
           artist: "Unknown Artist",
           duration: 0, // Metadata extraction would be required to get duration
           filename: filename,
@@ -81,9 +98,7 @@ app.post("/api/download_song", (req, res) => {
     const scriptPath = path.join(__dirname, "download_songs.py");
     const pythonExecutable = "C:\\Python312\\python.exe"; // Use 'python3' or the full path if needed
 
-    console.log(
-      `Executing Python script: ${scriptPath} with query: ${query}`
-    );
+    console.log(`Executing Python script: ${scriptPath} with query: ${query}`);
     const pythonProcess = spawn(pythonExecutable, [
       scriptPath,
       query,

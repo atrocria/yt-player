@@ -7,30 +7,29 @@
     "skipLibCheck": false,
     "skipDefaultLibCheck": false,
     "typeRoots": ["node_modules/@types"],
-
-    /* Module Resolution */
-    "moduleResolution": "node", // bundler -> Node
-    "allowImportingTsExtensions": true,
+    "moduleResolution": "node",
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "composite": true,
+    "outDir": "./dist",
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-
-    /* Custom Paths */
     "baseUrl": "./",
     "paths": {
       "@components/*": ["src/components/*"],
-      "@sections/*": ["src/sections/*"]
+      "@sections/*": ["src/sections/*"],
+      "firebaseConfig": ["../../src/firebaseConfig"]  // Alias path for firebaseConfig.ts
     }
   },
-  "include": ["src"]
+  "include": [
+    "src/**/*",
+    "../../src/firebaseConfig.ts" // Explicitly include firebaseConfig.ts
+  ],
+  "exclude": ["node_modules"]
 }
